@@ -1,5 +1,5 @@
 {
-  "vehicle": "GMC2500Gen4_attempt1_rev0_job12345633",
+  "vehicle": "GMC2500Gen4_attempt1_rev1_job12345633",
   "segments": [
     {"shaft_length": 20, "euler": [-62, -32, 0]},
     {"shaft_length": 150, "euler": [12, 10, 0]},
