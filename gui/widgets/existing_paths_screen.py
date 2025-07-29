@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (
     QPushButton, QSpinBox, QSizePolicy, QMessageBox
 )
 from PyQt5.QtCore import Qt
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from backend.services.file_handler import list_vehicle_paths, load_path_data
 from backend.services.path_math import compute_path
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -16,36 +17,8 @@ class ExistingPathsScreen(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        # === Top Layout with Grid Toggle ===
-        top_layout = QHBoxLayout()
-
-        top_layout.addStretch()
-
-        self.toggle_grid_btn = QPushButton("Hide Grid")
-        self.toggle_grid_btn.setCheckable(True)
-        self.toggle_grid_btn.setChecked(False)
-        self.toggle_grid_btn.clicked.connect(self.toggle_grid_walls)
-
-        # Green toggle-style button
-        self.toggle_grid_btn.setStyleSheet("""
-            QPushButton {
-                background-color: lightgreen;
-                border-radius: 12px;
-                padding: 6px 12px;
-                font-weight: bold;
-            }
-            QPushButton:checked {
-                background-color: #d9534f;
-                color: white;
-            }
-        """)
-
-        top_layout.addWidget(self.toggle_grid_btn)
-        self.layout.addLayout(top_layout)
-
         # === Search Inputs ===
         search_layout = QHBoxLayout()
-
         self.vehicle_input = QLineEdit()
         self.vehicle_input.setPlaceholderText("Brand|Model|Gen")
         self.vehicle_input.setFixedWidth(250)
@@ -70,7 +43,6 @@ class ExistingPathsScreen(QWidget):
         search_layout.addWidget(self.attempt_input)
         search_layout.addWidget(self.revision_input)
         search_layout.addWidget(search_button)
-
         self.layout.addLayout(search_layout)
 
         # === Vehicle List ===
@@ -78,16 +50,44 @@ class ExistingPathsScreen(QWidget):
         self.path_list.itemClicked.connect(self.display_3d_path)
         self.layout.addWidget(self.path_list)
 
-        # === 3D Viewer ===
-        self.figure = plt.figure(figsize=(8, 6))
+        # === 3D Viewer with Grid Toggle ===
+        viewer_layout = QVBoxLayout()
+        viewer_container = QWidget()
+        viewer_container.setLayout(viewer_layout)
+
+        top_right_layout = QHBoxLayout()
+        top_right_layout.addStretch()
+
+        self.toggle_grid_btn = QPushButton("Hide Grid")
+        self.toggle_grid_btn.setCheckable(True)
+        self.toggle_grid_btn.setChecked(False)
+        self.toggle_grid_btn.clicked.connect(self.toggle_grid_walls)
+        self.toggle_grid_btn.setFixedWidth(100)
+        self.toggle_grid_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                font-weight: bold;
+                border-radius: 8px;
+                padding: 2px;
+            }
+            QPushButton:checked {
+                background-color: #888;
+            }
+        """)
+        top_right_layout.addWidget(self.toggle_grid_btn)
+        viewer_layout.addLayout(top_right_layout)
+
+        self.figure = plt.figure(figsize=(7, 6))
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.canvas.setMinimumHeight(450)
-        self.layout.addWidget(self.canvas)
+        self.canvas.setMinimumHeight(460)
+        viewer_layout.addWidget(self.canvas)
+        
+        self.layout.addWidget(viewer_container)
 
         # === Bottom Buttons ===
         button_layout = QHBoxLayout()
-
         delete_btn = QPushButton("🗑️ Delete Path")
         delete_btn.clicked.connect(self.delete_selected_path)
         delete_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -100,7 +100,6 @@ class ExistingPathsScreen(QWidget):
 
         self.layout.addLayout(button_layout)
 
-        # Load data
         self.load_vehicle_paths()
 
     def load_vehicle_paths(self):
@@ -115,11 +114,7 @@ class ExistingPathsScreen(QWidget):
         attempt = self.attempt_input.value()
         revision = self.revision_input.value()
         search_key = f"{base}_attempt{attempt}_rev{revision}".lower()
-
-        self.filtered_paths = [
-            p for p in self.paths
-            if search_key in p[1].lower()
-        ]
+        self.filtered_paths = [p for p in self.paths if search_key in p[1].lower()]
         self.path_list.clear()
         for _, vehicle in self.filtered_paths:
             self.path_list.addItem(vehicle)
@@ -149,7 +144,6 @@ class ExistingPathsScreen(QWidget):
             self.ax.set_title(data.get("vehicle", "Steering Path"))
 
             self.apply_axis_visibility(hidden=self.toggle_grid_btn.isChecked())
-
             self.canvas.draw()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to plot path:\n{str(e)}")
@@ -163,7 +157,6 @@ class ExistingPathsScreen(QWidget):
     def apply_axis_visibility(self, hidden):
         if not hasattr(self, 'ax'):
             return
-
         if hidden:
             self.ax.set_axis_off()
             self.ax.grid(False)
@@ -178,12 +171,10 @@ class ExistingPathsScreen(QWidget):
         selected_item = self.path_list.currentItem()
         if not selected_item:
             return
-
         vehicle_name = selected_item.text()
         matching = [f for f in self.filtered_paths if f[1] == vehicle_name]
         if not matching:
             return
-
         filename = matching[0][0]
         filepath = os.path.join("data/input", filename)
 
@@ -194,7 +185,6 @@ class ExistingPathsScreen(QWidget):
         )
         if reply != QMessageBox.Yes:
             return
-
         try:
             os.remove(filepath)
             self.load_vehicle_paths()
