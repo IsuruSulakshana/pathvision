@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QLineEdit, QLabel,
-    QPushButton, QSpinBox, QSizePolicy, QMessageBox
+    QPushButton, QSpinBox, QSizePolicy, QMessageBox, QListWidgetItem
 )
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -83,7 +83,7 @@ class ExistingPathsScreen(QWidget):
         self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.canvas.setMinimumHeight(460)
         viewer_layout.addWidget(self.canvas)
-        
+
         self.layout.addWidget(viewer_container)
 
         # === Bottom Buttons ===
@@ -100,14 +100,14 @@ class ExistingPathsScreen(QWidget):
 
         self.layout.addLayout(button_layout)
 
-        self.load_vehicle_paths()
+        # Load paths initially
+        self.refresh()
 
-    def load_vehicle_paths(self):
+    def refresh(self):
+        """Reload all paths into the list."""
         self.paths = list_vehicle_paths()
         self.filtered_paths = self.paths.copy()
-        self.path_list.clear()
-        for _, vehicle in self.filtered_paths:
-            self.path_list.addItem(vehicle)
+        self.populate_list(self.filtered_paths)
 
     def filter_list(self):
         base = self.vehicle_input.text().strip()
@@ -115,19 +115,22 @@ class ExistingPathsScreen(QWidget):
         revision = self.revision_input.value()
         search_key = f"{base}_attempt{attempt}_rev{revision}".lower()
         self.filtered_paths = [p for p in self.paths if search_key in p[1].lower()]
+        self.populate_list(self.filtered_paths)
+
+    def populate_list(self, path_data_list):
+        """Fill the list widget with vehicle names only but store filenames internally."""
         self.path_list.clear()
-        for _, vehicle in self.filtered_paths:
-            self.path_list.addItem(vehicle)
+        for filename, vehicle in path_data_list:
+            item = QListWidgetItem(vehicle)
+            item.setData(Qt.UserRole, filename)  # store the filename invisibly
+            self.path_list.addItem(item)
 
     def display_3d_path(self, item):
-        vehicle_name = item.text()
-        matching = [f for f in self.filtered_paths if f[1] == vehicle_name]
-        if not matching:
-            return
-
-        filename = matching[0][0]
+        filename = item.data(Qt.UserRole)
         data = load_path_data(filename)
-
+        if not data:
+            QMessageBox.warning(self, "Error", f"Cannot load file: {filename}")
+            return
         try:
             shaft_lengths = [seg['shaft_length'] for seg in data["segments"]]
             yaw_angles = [seg['euler'][0] for seg in data["segments"]]
@@ -172,10 +175,7 @@ class ExistingPathsScreen(QWidget):
         if not selected_item:
             return
         vehicle_name = selected_item.text()
-        matching = [f for f in self.filtered_paths if f[1] == vehicle_name]
-        if not matching:
-            return
-        filename = matching[0][0]
+        filename = selected_item.data(Qt.UserRole)
         filepath = os.path.join("data/input", filename)
 
         reply = QMessageBox.question(
@@ -187,6 +187,6 @@ class ExistingPathsScreen(QWidget):
             return
         try:
             os.remove(filepath)
-            self.load_vehicle_paths()
+            self.refresh()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to delete file:\n{e}")

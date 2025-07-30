@@ -68,9 +68,11 @@ class AppWindow(QWidget):
         self.stack.setCurrentWidget(self.add_path_screen)
 
     def show_existing_paths(self):
+        self.existing_paths_screen.refresh()
         self.stack.setCurrentWidget(self.existing_paths_screen)
 
     def show_compare_paths(self):
+        self.compare_paths_screen.refresh()
         self.stack.setCurrentWidget(self.compare_paths_screen)
 
     def go_home(self):

@@ -2,9 +2,8 @@ from PyQt5.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox, QComboBox,
     QTableWidget, QTableWidgetItem, QPushButton, QMessageBox
 )
+from backend.services.file_handler import save_path_data
 from PyQt5.QtCore import Qt
-import json
-import os
 
 
 class AddPathScreen(QWidget):
@@ -71,6 +70,7 @@ class AddPathScreen(QWidget):
         n = self.element_input.value()
         self.table.setRowCount(n)
         for i in range(n):
+            # Set row number
             self.table.setItem(i, 0, QTableWidgetItem(str(i + 1)))
 
     def save_path(self):
@@ -118,12 +118,8 @@ class AddPathScreen(QWidget):
             "segments": segments
         }
 
-        os.makedirs("data/input", exist_ok=True)
-        file_path = f"data/input/{vehicle_id}.json"
-
         try:
-            with open(file_path, "w") as f:
-                json.dump(data, f, indent=2)
-            QMessageBox.information(self, "Success", f"Path saved to:\n{file_path}")
+            save_path_data(f"{vehicle_id}.json", data)
+            QMessageBox.information(self, "Success", f"Path saved to:\ndata/input/{vehicle_id}.json")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save file: {str(e)}")
