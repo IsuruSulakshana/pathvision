@@ -3,10 +3,11 @@ from PyQt5.QtWidgets import (
     QPushButton, QMessageBox, QSizePolicy, QLineEdit, QSpinBox
 )
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from backend.services.file_handler import list_vehicle_paths, load_path_data
 from backend.services.comparator import compare_paths
 import matplotlib.pyplot as plt
+
+from gui.widgets.custom_toolbar import CustomNavigationToolbar
 
 class ComparePathsScreen(QWidget):
     def __init__(self, go_home_callback):
@@ -27,8 +28,6 @@ class ComparePathsScreen(QWidget):
         selectors_layout.addLayout(self.pathB_widget['layout'])
 
         self.layout.addLayout(selectors_layout)
-
-        # --- Compare Button near top right controls (skip here, add in viewer) ---
 
         # --- 3D Viewer Container ---
         viewer_container = QWidget()
@@ -67,27 +66,23 @@ class ComparePathsScreen(QWidget):
         viewer_layout.addWidget(self.canvas)
 
         # Navigation toolbar
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolbar = CustomNavigationToolbar(self.canvas, self)
         viewer_layout.addWidget(self.toolbar)
 
         self.layout.addWidget(viewer_container)
 
-    
-        # --- Bottom Buttons (Responsive Full Width, Equal Size) ---
+        # --- Bottom Buttons ---
         button_layout = QHBoxLayout()
 
-        # Create Report Button
         report_btn = QPushButton("📄 Create Report")
         report_btn.setObjectName("primaryButton")
         report_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        # Back to Home Button
         back_btn = QPushButton("🔙 Back to Home")
         back_btn.clicked.connect(self.go_home_callback)
         back_btn.setObjectName("primaryButton")
         back_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        # Add buttons with equal stretch
         button_layout.addStretch(1)
         button_layout.addWidget(report_btn, stretch=5)
         button_layout.addSpacing(20)
@@ -96,20 +91,16 @@ class ComparePathsScreen(QWidget):
 
         self.layout.addLayout(button_layout)
 
-
-        # Load paths initially (for both selectors)
-        self.all_paths = list_vehicle_paths()
-        self.load_paths_in_selector(self.pathA_widget)
-        self.load_paths_in_selector(self.pathB_widget)
+        # Initialize all_paths dict: key=display_name, value=filename
+        self.all_paths = {}
+        self.refresh()
 
     def create_searchable_path_selector(self, title):
         """Returns dict with layout and widgets for one path selector with search inputs"""
         layout = QVBoxLayout()
 
-        # Title label
         layout.addWidget(QLabel(f"Select {title}:"))
 
-        # Search controls layout
         search_layout = QHBoxLayout()
 
         vehicle_input = QLineEdit()
@@ -138,11 +129,9 @@ class ComparePathsScreen(QWidget):
 
         layout.addLayout(search_layout)
 
-        # List widget for paths
         list_widget = QListWidget()
         layout.addWidget(list_widget)
 
-        # Connect search button to filter function
         search_button.clicked.connect(lambda: self.filter_selector_list(
             vehicle_input.text(), attempt_input.value(), revision_input.value(), list_widget))
 
@@ -155,22 +144,36 @@ class ComparePathsScreen(QWidget):
             'list_widget': list_widget,
         }
 
+    def refresh(self):
+        """Reload all paths from file system and update selectors"""
+        paths = list_vehicle_paths()
+        # Create dict: key = vehicle display string, value = filename
+        # vehicle display string can be vehicle_id or vehicle_id + filename to ensure uniqueness if needed
+        self.all_paths = {}
+        for filename, vehicle in paths:
+            # If vehicle name duplicates exist, append filename for uniqueness
+            display_name = vehicle
+            if display_name in self.all_paths:
+                display_name = f"{vehicle} | {filename}"
+            self.all_paths[display_name] = filename
+
+        # Update both selectors
+        self.load_paths_in_selector(self.pathA_widget)
+        self.load_paths_in_selector(self.pathB_widget)
+
     def load_paths_in_selector(self, selector):
-        """Load all vehicle names into selector's list widget"""
         selector['list_widget'].clear()
-        for _, vehicle in self.all_paths:
-            selector['list_widget'].addItem(vehicle)
+        for display_name in sorted(self.all_paths.keys()):
+            selector['list_widget'].addItem(display_name)
 
     def filter_selector_list(self, vehicle_text, attempt, revision, list_widget):
-        """Filter all_paths by inputs and update the given list widget"""
         search_key = f"{vehicle_text.strip()}_attempt{attempt}_rev{revision}".lower()
-        filtered = [p for p in self.all_paths if search_key in p[1].lower()]
+        filtered = [name for name in self.all_paths.keys() if search_key in name.lower()]
         list_widget.clear()
-        for _, vehicle in filtered:
-            list_widget.addItem(vehicle)
+        for name in filtered:
+            list_widget.addItem(name)
 
     def compare_selected_paths(self):
-        # Get selections from both selectors
         item1 = self.pathA_widget['list_widget'].currentItem()
         item2 = self.pathB_widget['list_widget'].currentItem()
 
@@ -181,8 +184,8 @@ class ComparePathsScreen(QWidget):
         name1 = item1.text()
         name2 = item2.text()
 
-        file1 = next((f[0] for f in self.all_paths if f[1] == name1), None)
-        file2 = next((f[0] for f in self.all_paths if f[1] == name2), None)
+        file1 = self.all_paths.get(name1, None)
+        file2 = self.all_paths.get(name2, None)
 
         if not file1 or not file2:
             QMessageBox.critical(self, "File Error", "Selected path files could not be found.")
