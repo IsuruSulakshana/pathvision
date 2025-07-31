@@ -1,0 +1,53 @@
+{
+    "vehicle": "Bronco50Gen04_attempt1_rev0_job12345678",
+    "segments": [
+        {
+            "shaft_length": 5.0,
+            "euler": [
+                -60.0,
+                -20.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 20.0,
+            "euler": [
+                -60.0,
+                -20.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 150.0,
+            "euler": [
+                10.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 30.0,
+            "euler": [
+                -90.0,
+                -10.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                -40.0,
+                -25.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                -35.0,
+                -30.0,
+                0.0
+            ]
+        }
+    ]
+}

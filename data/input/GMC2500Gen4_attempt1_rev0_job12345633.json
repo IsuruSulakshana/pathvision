@@ -1,10 +1,45 @@
 {
   "vehicle": "GMC2500Gen4_attempt1_rev0_job12345645",
   "segments": [
-    {"shaft_length": 20, "euler": [-80, -25, 0]},
-    {"shaft_length": 150, "euler": [10, 0, 0]},
-    {"shaft_length": 30, "euler": [-80, -10, 0]},
-    {"shaft_length": 10, "euler": [-42, -35, 0]},
-    {"shaft_length": 10, "euler": [-40, -25, 0]}
+    {
+      "shaft_length": 20,
+      "euler": [
+        -80,
+        -25,
+        0
+      ]
+    },
+    {
+      "shaft_length": 150,
+      "euler": [
+        10,
+        0,
+        0
+      ]
+    },
+    {
+      "shaft_length": 30,
+      "euler": [
+        -80,
+        -10,
+        0
+      ]
+    },
+    {
+      "shaft_length": 10,
+      "euler": [
+        -42,
+        -35,
+        0
+      ]
+    },
+    {
+      "shaft_length": 10,
+      "euler": [
+        -40,
+        -25,
+        0
+      ]
+    }
   ]
 }

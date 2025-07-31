@@ -1,0 +1,45 @@
+{
+    "vehicle": "Ford250Gen05_attempt1_rev0_job12345678",
+    "segments": [
+        {
+            "shaft_length": 50.0,
+            "euler": [
+                -70.0,
+                -40.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 40.0,
+            "euler": [
+                20.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 30.0,
+            "euler": [
+                -70.0,
+                -20.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 20.0,
+            "euler": [
+                -42.0,
+                -35.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                -40.0,
+                -25.0,
+                0.0
+            ]
+        }
+    ]
+}
