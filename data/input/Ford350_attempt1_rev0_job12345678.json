@@ -1,0 +1,45 @@
+{
+    "vehicle": "Ford350_attempt1_rev0_job12345678",
+    "segments": [
+        {
+            "shaft_length": 20.0,
+            "euler": [
+                -80.0,
+                -25.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 150.0,
+            "euler": [
+                10.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 30.0,
+            "euler": [
+                -80.0,
+                -10.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                -42.0,
+                -35.0,
+                0.0
+            ]
+        },
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                -40.0,
+                -25.0,
+                0.0
+            ]
+        }
+    ]
+}

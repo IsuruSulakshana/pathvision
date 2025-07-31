@@ -90,21 +90,21 @@ class AddPathScreen(QWidget):
 
         for i in range(n):
             try:
-                length_item = self.table.item(i, 1)
+                shaft_length_item = self.table.item(i, 1)
                 x_item = self.table.item(i, 2)
                 y_item = self.table.item(i, 3)
                 z_item = self.table.item(i, 4)
 
-                if not all([length_item, x_item, y_item, z_item]):
+                if not all([shaft_length_item, x_item, y_item, z_item]):
                     raise ValueError("Empty cell")
 
-                length = float(length_item.text())
+                shaft_length = float(shaft_length_item.text())
                 x = float(x_item.text())
                 y = float(y_item.text())
                 z = float(z_item.text())
 
                 segments.append({
-                    "length": length,
+                    "shaft_length": shaft_length,
                     "euler": [x, y, z]
                 })
 
