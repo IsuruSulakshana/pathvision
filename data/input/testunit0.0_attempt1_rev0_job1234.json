@@ -1,0 +1,29 @@
+{
+    "vehicle": "testunit0.0_attempt1_rev0_job1234",
+    "segments": [
+        {
+            "shaft_length": 10,
+            "euler": [7, -138, 0.0]
+        },
+        {
+            "shaft_length": 10,
+            "euler": [5, -49, 0.0]
+        },
+        {
+            "shaft_length": 80,
+            "euler": [6, -50, 0.0]
+        },
+        {
+            "shaft_length": 10,
+            "euler": [3, -60, 0.0]
+        },
+        {
+            "shaft_length": 10,
+            "euler": [-1, -144, 0.0]
+        },
+        {
+            "shaft_length": 20,
+            "euler": [-4, -155, 0.0]
+        }
+    ]
+}

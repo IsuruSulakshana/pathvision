@@ -75,3 +75,4 @@ class AddPathScreen(QWidget):
             json.dump(segments, f, indent=2)
 
         QMessageBox.information(self, "Saved", f"Path saved to: {path_file}")
+
