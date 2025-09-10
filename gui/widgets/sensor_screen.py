@@ -1,30 +1,38 @@
+# gui/widgets/sensor_screen.py
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
 from PyQt5.QtCore import Qt
-from backend.services.sensor_reader import SensorReader
 
 class SensorScreen(QWidget):
-    def __init__(self, go_home_callback):
+    def __init__(self):
         super().__init__()
-        self.go_home_callback = go_home_callback
 
+        self.setWindowTitle("Sensor Screen")
         layout = QVBoxLayout()
-        self.label = QLabel("Initializing sensor...")
-        self.label.setAlignment(Qt.AlignHCenter)
-        layout.addWidget(self.label)
-
-        self.btn_home = QPushButton("⬅ Back to Home")
-        self.btn_home.clicked.connect(self.go_home)
-        layout.addWidget(self.btn_home, alignment=Qt.AlignHCenter)
-
         self.setLayout(layout)
 
-        # Start sensor reader
-        self.reader = SensorReader(port="COM4", baudrate=9600, callback=self.update_label)
-        self.reader.start()
+        # Status label
+        self.status_label = QLabel("Status: Not connected")
+        self.status_label.setAlignment(Qt.AlignHCenter)
+        layout.addWidget(self.status_label)
 
-    def update_label(self, text):
-        self.label.setText(text)
+        # Angle labels
+        self.pitch_label = QLabel("Pitch: 0.0°")
+        self.pitch_label.setAlignment(Qt.AlignHCenter)
+        layout.addWidget(self.pitch_label)
 
-    def go_home(self):
-        self.reader.stop()
-        self.go_home_callback()
+        self.yaw_label = QLabel("Yaw: 0.0°")
+        self.yaw_label.setAlignment(Qt.AlignHCenter)
+        layout.addWidget(self.yaw_label)
+
+        # Back button
+        self.back_button = QPushButton("Back to Home")
+        self.back_button.setObjectName("btn_primary")
+        layout.addWidget(self.back_button, alignment=Qt.AlignHCenter)
+
+    # Called by sensor_reader
+    def update_angles(self, pitch, yaw):
+        self.pitch_label.setText(f"Pitch: {pitch:.2f}°")
+        self.yaw_label.setText(f"Yaw: {yaw:.2f}°")
+
+    def update_status(self, text):
+        self.status_label.setText(f"Status: {text}")

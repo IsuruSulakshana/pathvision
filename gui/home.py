@@ -1,13 +1,11 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QWidget, QPushButton, QVBoxLayout, QStackedWidget, QSizePolicy
-)
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QStackedWidget, QSizePolicy, QPushButton
 from gui.widgets.add_path_screen import AddPathScreen
 from gui.widgets.existing_paths_screen import ExistingPathsScreen
 from gui.widgets.compare_paths_screen import ComparePathsScreen
-from gui.widgets.sensor_screen import SensorScreen   # <-- NEW IMPORT
-from gui.widgets.macro_screen import MacroScreen   # <-- NEW IMPORT
-
+from gui.widgets.sensor_screen import SensorScreen
+from gui.widgets.macro_screen import MacroScreen
+from gui.widgets.home_screen import HomeScreen  # Optional: if you want a separate HomeScreen class
 
 class AppWindow(QWidget):
     def __init__(self):
@@ -15,33 +13,41 @@ class AppWindow(QWidget):
         self.setWindowTitle("🚘 PathVision")
         self.setMinimumSize(800, 600)
 
+        # Stacked widget to hold all screens
         self.stack = QStackedWidget()
-        self.home_widget = QWidget()
-        self.stack.addWidget(self.home_widget)
 
-        # Other screens
-        self.add_path_screen = AddPathScreen(self.go_home)
-        self.existing_paths_screen = ExistingPathsScreen(self.go_home)
-        self.compare_paths_screen = ComparePathsScreen(self.go_home)
-        self.sensor_screen = SensorScreen(self.go_home)   # <-- NEW SCREEN
-        self.macro_screen = MacroScreen(self.go_home)    # <-- NEW SCREEN
+        # Screens dictionary for easy switching
+        self.screens = {}
+        self.screens['home'] = QWidget()  # Home screen container
+        self.screens['add'] = AddPathScreen(self.go_home)
+        self.screens['existing'] = ExistingPathsScreen(self.go_home)
+        self.screens['compare'] = ComparePathsScreen(self.go_home)
+        self.screens['sensor'] = SensorScreen()  # No argument
+        self.screens['macro'] = MacroScreen(self.go_home)
 
-        self.stack.addWidget(self.add_path_screen)
-        self.stack.addWidget(self.existing_paths_screen)
-        self.stack.addWidget(self.compare_paths_screen)
-        self.stack.addWidget(self.sensor_screen)          # <-- ADD TO STACK
-        self.stack.addWidget(self.macro_screen)          # <-- ADD TO STACK
+        # Connect sensor back button to go_home
+        self.screens['sensor'].back_button.clicked.connect(self.go_home)
 
+        # Initialize Home UI
         self.init_home_ui()
+
+        # Add all screens to stacked widget
+        for screen in self.screens.values():
+            self.stack.addWidget(screen)
+
+        # Set main layout
         layout = QVBoxLayout()
         layout.addWidget(self.stack)
         self.setLayout(layout)
 
+        # Show home screen initially
+        self.switch_screen('home')
+
+    # ---------- Home UI ----------
     def init_home_ui(self):
         layout = QVBoxLayout()
         layout.setSpacing(20)
 
-        # Button style
         button_style = """
             QPushButton {
                 font-size: 16px;
@@ -51,49 +57,44 @@ class AppWindow(QWidget):
             }
         """
 
+        # Buttons
         btn_add = QPushButton("➕ Add New Path")
         btn_add.setStyleSheet(button_style)
-        btn_add.clicked.connect(self.show_add_path)
+        btn_add.clicked.connect(lambda: self.switch_screen('add'))
 
         btn_existing = QPushButton("📁 View Existing Paths")
         btn_existing.setStyleSheet(button_style)
-        btn_existing.clicked.connect(self.show_existing_paths)
+        btn_existing.clicked.connect(lambda: self.switch_screen('existing'))
 
         btn_compare = QPushButton("🔍 Compare Paths")
         btn_compare.setStyleSheet(button_style)
-        btn_compare.clicked.connect(self.show_compare_paths)
+        btn_compare.clicked.connect(lambda: self.switch_screen('compare'))
 
-        btn_sensor = QPushButton("📡 View Sensor Data")  # <-- NEW BUTTON
+        btn_sensor = QPushButton("📡 View Sensor Data")
         btn_sensor.setStyleSheet(button_style)
-        btn_sensor.clicked.connect(self.show_sensor)
+        btn_sensor.clicked.connect(lambda: self.switch_screen('sensor'))
 
-        btn_macro = QPushButton("⚙️ Generate Macro")  # <-- NEW BUTTON
+        btn_macro = QPushButton("⚙️ Generate Macro")
         btn_macro.setStyleSheet(button_style)
-        btn_macro.clicked.connect(self.show_macro)
+        btn_macro.clicked.connect(lambda: self.switch_screen('macro'))
 
-        # Centered buttons
+        # Add buttons centered
         for btn in [btn_add, btn_existing, btn_compare, btn_sensor, btn_macro]:
             btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             layout.addWidget(btn, alignment=Qt.AlignHCenter)
 
-        self.home_widget.setLayout(layout)
+        self.screens['home'].setLayout(layout)
 
-    def show_add_path(self):
-        self.stack.setCurrentWidget(self.add_path_screen)
-
-    def show_existing_paths(self):
-        self.existing_paths_screen.refresh()
-        self.stack.setCurrentWidget(self.existing_paths_screen)
-
-    def show_compare_paths(self):
-        self.compare_paths_screen.refresh()
-        self.stack.setCurrentWidget(self.compare_paths_screen)
-
-    def show_sensor(self):   # <-- NEW METHOD
-        self.stack.setCurrentWidget(self.sensor_screen)
-
-    def show_macro(self):    # <-- NEW METHOD
-        self.stack.setCurrentWidget(self.macro_screen)
+    # ---------- Navigation ----------
+    def switch_screen(self, key: str):
+        """Switch to the screen by key."""
+        if key in self.screens:
+            screen = self.screens[key]
+            # Call refresh() if available
+            if hasattr(screen, 'refresh'):
+                screen.refresh()
+            self.stack.setCurrentWidget(screen)
 
     def go_home(self):
-        self.stack.setCurrentWidget(self.home_widget)
+        """Shortcut to return to Home screen."""
+        self.switch_screen('home')

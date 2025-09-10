@@ -1,28 +1,44 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QSizePolicy
 
 class HomeScreen(QWidget):
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
+        self.init_ui()
+
+    def init_ui(self):
         layout = QVBoxLayout()
+        layout.setSpacing(20)
 
-        btn_add = QPushButton("➕ Add New Steering Path")
-        btn_existing = QPushButton("📁 Existing Steering Paths")
-        btn_compare = QPushButton("🔍 Compare Steering Path")
-        btn_sensor = QPushButton("📡 View Sensor Data")   # <-- NEW BUTTON
-        btn_macro = QPushButton("⚙️ Generate Macro")   # <-- NEW BUTTON
+        # Common button style
+        button_style = """
+            QPushButton {
+                font-size: 16px;
+                padding: 10px 20px;
+                min-width: 200px;
+                max-width: 300px;
+            }
+        """
 
+        # Create buttons
+        btn_add = QPushButton("➕ Add New Path")
+        btn_existing = QPushButton("📁 View Existing Paths")
+        btn_compare = QPushButton("🔍 Compare Paths")
+        btn_sensor = QPushButton("📡 View Sensor Data")
+        btn_macro = QPushButton("⚙️ Generate Macro")
 
+        # Apply style
+        for btn in [btn_add, btn_existing, btn_compare, btn_sensor, btn_macro]:
+            btn.setStyleSheet(button_style)
+            btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            layout.addWidget(btn, alignment=Qt.AlignHCenter)
+
+        # Connect buttons to parent switch_screen
         btn_add.clicked.connect(lambda: self.parent.switch_screen("add"))
         btn_existing.clicked.connect(lambda: self.parent.switch_screen("existing"))
         btn_compare.clicked.connect(lambda: self.parent.switch_screen("compare"))
-        btn_sensor.clicked.connect(lambda: self.parent.switch_screen("sensor"))  # <-- NEW ACTION
-        btn_macro.clicked.connect(lambda: self.parent.switch_screen("macro"))  # <-- NEW ACTION
+        btn_sensor.clicked.connect(lambda: self.parent.switch_screen("sensor"))
+        btn_macro.clicked.connect(lambda: self.parent.switch_screen("macro"))
 
-        layout.addWidget(btn_add)
-        layout.addWidget(btn_existing)
-        layout.addWidget(btn_compare)
-        layout.addWidget(btn_sensor)   # <-- ADD TO LAYOUT
-        layout.addWidget(btn_macro)   # <-- ADD TO LAYOUT
-        
         self.setLayout(layout)
