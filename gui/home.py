@@ -1,3 +1,5 @@
+# app_window.py
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QStackedWidget, QSizePolicy, QPushButton
 from gui.widgets.add_path_screen import AddPathScreen
@@ -5,7 +7,9 @@ from gui.widgets.existing_paths_screen import ExistingPathsScreen
 from gui.widgets.compare_paths_screen import ComparePathsScreen
 from gui.widgets.sensor_screen import SensorScreen
 from gui.widgets.macro_screen import MacroScreen
-from gui.widgets.home_screen import HomeScreen  # Optional: if you want a separate HomeScreen class
+from gui.widgets.home_screen import HomeScreen
+from gui.widgets.shaftsync_screen import ShaftSyncScreen   # NEW IMPORT
+
 
 class AppWindow(QWidget):
     def __init__(self):
@@ -22,10 +26,11 @@ class AppWindow(QWidget):
         self.screens['add'] = AddPathScreen(self.go_home)
         self.screens['existing'] = ExistingPathsScreen(self.go_home)
         self.screens['compare'] = ComparePathsScreen(self.go_home)
-        self.screens['sensor'] = SensorScreen()  # No argument
+        self.screens['sensor'] = SensorScreen()
         self.screens['macro'] = MacroScreen(self.go_home)
+        self.screens['shaftsync'] = ShaftSyncScreen(self.go_home)  # NEW SCREEN
 
-        # Connect sensor back button to go_home
+        # Connect sensor back button
         self.screens['sensor'].back_button.clicked.connect(self.go_home)
 
         # Initialize Home UI
@@ -78,8 +83,12 @@ class AppWindow(QWidget):
         btn_macro.setStyleSheet(button_style)
         btn_macro.clicked.connect(lambda: self.switch_screen('macro'))
 
+        btn_shaftsync = QPushButton("🔄 ShaftSync (Encoders)")  # NEW BUTTON
+        btn_shaftsync.setStyleSheet(button_style)
+        btn_shaftsync.clicked.connect(lambda: self.switch_screen('shaftsync'))
+
         # Add buttons centered
-        for btn in [btn_add, btn_existing, btn_compare, btn_sensor, btn_macro]:
+        for btn in [btn_add, btn_existing, btn_compare, btn_sensor, btn_macro, btn_shaftsync]:
             btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             layout.addWidget(btn, alignment=Qt.AlignHCenter)
 

@@ -1,0 +1,14 @@
+{
+    "vehicle": "ergrthtyj_attempt1_rev0_job123344556778",
+    "segments": [
+        {
+            "shaft_length": 50.0,
+            "euler": [
+                10.0,
+                -70.0,
+                40.0
+            ],
+            "sensor_position": "B"
+        }
+    ]
+}
