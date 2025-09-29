@@ -3,10 +3,10 @@ import os
 import serial
 import csv
 import numpy as np
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d # pyright: ignore[reportMissingImports]
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSizePolicy
-import pyqtgraph as pg
+import pyqtgraph as pg # pyright: ignore[reportMissingImports]
 from collections import deque
 from datetime import datetime
 
@@ -69,7 +69,7 @@ class ShaftSyncScreen(QWidget):
         self.diff_box.setStyleSheet("""
             background-color: #CCFFCC;
             font-size: 14px; font-weight: bold;
-            border: 2px solid #009900;
+            border: 2px solid #04A604FF;
             padding: 6px;
         """)
         self.diff_box.setFixedSize(120, 60)

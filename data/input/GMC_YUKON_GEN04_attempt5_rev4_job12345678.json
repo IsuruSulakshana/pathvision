@@ -1,0 +1,68 @@
+{
+    "vehicle": "GMC_YUKON_GEN04_attempt5_rev4_job12345678",
+    "segments": [
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                20.0,
+                50.0,
+                70.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 19.0,
+            "euler": [
+                50.0,
+                -60.0,
+                40.0
+            ],
+            "sensor_position": "B"
+        },
+        {
+            "shaft_length": 20.0,
+            "euler": [
+                50.0,
+                -140.0,
+                20.0
+            ],
+            "sensor_position": "C"
+        },
+        {
+            "shaft_length": 30.0,
+            "euler": [
+                10.0,
+                110.0,
+                40.0
+            ],
+            "sensor_position": "D"
+        },
+        {
+            "shaft_length": 40.0,
+            "euler": [
+                2.0,
+                40.0,
+                35.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 70.0,
+            "euler": [
+                20.0,
+                -20.0,
+                10.0
+            ],
+            "sensor_position": "B"
+        },
+        {
+            "shaft_length": 80.0,
+            "euler": [
+                35.0,
+                -135.0,
+                75.0
+            ],
+            "sensor_position": "C"
+        }
+    ]
+}
