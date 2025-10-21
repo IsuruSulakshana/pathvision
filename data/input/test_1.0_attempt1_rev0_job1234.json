@@ -1,0 +1,68 @@
+{
+    "vehicle": "test_1.0_attempt1_rev0_job1234",
+    "segments": [
+        {
+            "shaft_length": 40.0,
+            "euler": [
+                0.0,
+                14.5,
+                112.5
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 45.0,
+            "euler": [
+                0.0,
+                18.0,
+                -153.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 70.0,
+            "euler": [
+                0.0,
+                -5.0,
+                -173.5
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 45.0,
+            "euler": [
+                0.0,
+                20.6,
+                -168.3
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 40.0,
+            "euler": [
+                0.0,
+                1.6,
+                98.4
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 40.0,
+            "euler": [
+                0.0,
+                35.0,
+                88.3
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 40.0,
+            "euler": [
+                0.0,
+                4.8,
+                94.0
+            ],
+            "sensor_position": "A"
+        }
+    ]
+}

@@ -1,0 +1,68 @@
+{
+    "vehicle": "test_unit_with_pathum_and_shamal_attempt1_rev0_job12345678",
+    "segments": [
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                0.0,
+                18.0,
+                166.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                0.0,
+                -2.0,
+                -97.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 80.0,
+            "euler": [
+                0.0,
+                13.0,
+                -106.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                0.0,
+                1.0,
+                -81.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 10.0,
+            "euler": [
+                0.0,
+                9.0,
+                -169.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 20.0,
+            "euler": [
+                0.0,
+                7.0,
+                -165.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 20.0,
+            "euler": [
+                0.0,
+                6.0,
+                -175.0
+            ],
+            "sensor_position": "A"
+        }
+    ]
+}
