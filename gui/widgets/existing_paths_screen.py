@@ -1,14 +1,16 @@
+# gui/widgets/existing_paths_screen.py
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QLineEdit, QLabel,
     QPushButton, QSpinBox, QSizePolicy, QMessageBox, QListWidgetItem
 )
 from PyQt5.QtCore import Qt
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from backend.services.file_handler import list_vehicle_paths, load_path_data
-from backend.services.path_math import compute_path
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import os
+import numpy as np
+
+from backend.services.file_handler import list_vehicle_paths, load_path_data
+from backend.services.path_math import compute_path_from_segments
 
 class ExistingPathsScreen(QWidget):
     def __init__(self, go_home_callback):
@@ -122,7 +124,7 @@ class ExistingPathsScreen(QWidget):
         self.path_list.clear()
         for filename, vehicle in path_data_list:
             item = QListWidgetItem(vehicle)
-            item.setData(Qt.UserRole, filename)  # store the filename invisibly
+            item.setData(Qt.UserRole, filename)
             self.path_list.addItem(item)
 
     def display_3d_path(self, item):
@@ -131,12 +133,11 @@ class ExistingPathsScreen(QWidget):
         if not data:
             QMessageBox.warning(self, "Error", f"Cannot load file: {filename}")
             return
-        try:
-            shaft_lengths = [seg['shaft_length'] for seg in data["segments"]]
-            yaw_angles = [seg['euler'][0] for seg in data["segments"]]
-            pitch_angles = [seg['euler'][1] for seg in data["segments"]]
 
-            path_points = compute_path(shaft_lengths, yaw_angles, pitch_angles)
+        try:
+            segments = data.get("segments", [])
+            path_points = compute_path_from_segments(segments)
+
             xs = [p[0] for p in path_points]
             ys = [p[1] for p in path_points]
             zs = [p[2] for p in path_points]
@@ -145,6 +146,21 @@ class ExistingPathsScreen(QWidget):
             self.ax = self.figure.add_subplot(111, projection='3d')
             self.ax.plot(xs, ys, zs, marker='o', linewidth=2, color='red')
             self.ax.set_title(data.get("vehicle", "Steering Path"))
+
+            # --- Compute bending angles and annotate ---
+            for i in range(1, len(path_points)-1):
+                p_prev = np.array(path_points[i-1])
+                p_curr = np.array(path_points[i])
+                p_next = np.array(path_points[i+1])
+
+                v1 = p_curr - p_prev
+                v2 = p_next - p_curr
+
+                cos_theta = np.clip(np.dot(v1, v2) / (np.linalg.norm(v1)*np.linalg.norm(v2)), -1.0, 1.0)
+                angle_deg = np.degrees(np.arccos(cos_theta))
+
+                self.ax.text(p_curr[0], p_curr[1], p_curr[2],
+                             f"{angle_deg:.1f}°", color='blue', fontsize=9)
 
             self.apply_axis_visibility(hidden=self.toggle_grid_btn.isChecked())
             self.canvas.draw()

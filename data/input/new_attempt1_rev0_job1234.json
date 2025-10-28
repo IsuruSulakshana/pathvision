@@ -1,0 +1,68 @@
+{
+    "vehicle": "new_attempt1_rev0_job1234",
+    "segments": [
+        {
+            "shaft_length": 40.0,
+            "xyz": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 45.0,
+            "xyz": [
+                8.7,
+                21.8,
+                0.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 40.0,
+            "xyz": [
+                -7.1,
+                3.38,
+                0.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 45.0,
+            "xyz": [
+                13.1,
+                90.1,
+                0.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 70.0,
+            "xyz": [
+                -27.1,
+                27.6,
+                0.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 40.0,
+            "xyz": [
+                -1.5,
+                9.3,
+                0.0
+            ],
+            "sensor_position": "A"
+        },
+        {
+            "shaft_length": 40.0,
+            "xyz": [
+                10.9,
+                -87.5,
+                0.0
+            ],
+            "sensor_position": "A"
+        }
+    ]
+}

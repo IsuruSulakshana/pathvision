@@ -1,9 +1,14 @@
+# gui/widgets/add_path_screen.py
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox, QComboBox,
     QTableWidget, QTableWidgetItem, QPushButton, QMessageBox
 )
-from backend.services.file_handler import save_path_data
 from PyQt5.QtCore import Qt
+from backend.services.file_handler import save_path_data
+from backend.services.path_math import compute_path  # import our improved path logic
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 
 class AddPathScreen(QWidget):
     SENSOR_POSITIONS = ["A", "B", "C", "D"]  # Available sensor positions
@@ -48,7 +53,7 @@ class AddPathScreen(QWidget):
         self.layout.addLayout(count_layout)
 
         # --- Segment Table ---
-        self.table = QTableWidget(0, 6)  # Add 6th column for Sensor Position
+        self.table = QTableWidget(0, 6)
         self.table.setHorizontalHeaderLabels(["No", "Length", "X", "Y", "Z", "Sensor Position"])
         self.layout.addWidget(self.table)
 
@@ -57,6 +62,10 @@ class AddPathScreen(QWidget):
         save_btn = QPushButton("💾 Save Path")
         save_btn.clicked.connect(self.save_path)
         button_layout.addWidget(save_btn)
+
+        preview_btn = QPushButton("🔍 Preview 3D Path")
+        preview_btn.clicked.connect(self.preview_path)
+        button_layout.addWidget(preview_btn)
 
         back_btn = QPushButton("🔙 Back to Home")
         back_btn.clicked.connect(self.on_back)
@@ -68,42 +77,14 @@ class AddPathScreen(QWidget):
         n = self.element_input.value()
         self.table.setRowCount(n)
         for i in range(n):
-            # Row number
             self.table.setItem(i, 0, QTableWidgetItem(str(i + 1)))
-
             # If sensor dropdown does not exist, create it
             if not self.table.cellWidget(i, 5):
                 combo = QComboBox()
                 combo.addItems(self.SENSOR_POSITIONS)
-                combo.currentTextChanged.connect(lambda val, row=i: self.adjust_pitch(row, val))
                 self.table.setCellWidget(i, 5, combo)
 
-    def adjust_pitch(self, row, sensor_position):
-        """Adjust the Y value (pitch) based on sensor position."""
-        y_item = self.table.item(row, 3)  # Y is column index 3
-        if y_item is None:
-            return
-        try:
-            y_val = float(y_item.text())
-        except ValueError:
-            return
-
-        # Apply sensor position adjustment
-        if sensor_position == "A":
-            adjusted = y_val
-        elif sensor_position == "B":
-            adjusted = y_val - 90
-        elif sensor_position == "C":
-            adjusted = y_val - 180
-        elif sensor_position == "D":
-            adjusted = y_val + 90
-        else:
-            adjusted = y_val
-
-        y_item.setText(str(adjusted))
-
-
-    def save_path(self):
+    def collect_table_data(self):
         base = self.vehicle_base.text().strip()
         attempt = self.attempt_input.value()
         revision = self.revision_input.currentText()
@@ -111,7 +92,7 @@ class AddPathScreen(QWidget):
 
         if not all([base, job]):
             QMessageBox.warning(self, "Missing Info", "Please fill all vehicle info fields.")
-            return
+            return None
 
         vehicle_id = f"{base}_attempt{attempt}_rev{revision}_job{job}".replace(" ", "_")
         n = self.element_input.value()
@@ -122,31 +103,64 @@ class AddPathScreen(QWidget):
                 length_item = self.table.item(i, 1)
                 x_item = self.table.item(i, 2)
                 y_item = self.table.item(i, 3)
-                pitch_item = self.table.item(i, 4)
+                z_item = self.table.item(i, 4)
                 sensor_widget = self.table.cellWidget(i, 5)
 
-                if not all([length_item, x_item, y_item, pitch_item, sensor_widget]):
-                    raise ValueError("Empty cell or missing sensor")
+                if not all([length_item, x_item, y_item, z_item, sensor_widget]):
+                    raise ValueError(f"Row {i+1}: missing values")
 
-                shaft_length = float(length_item.text())
-                x = float(x_item.text())
-                y = float(y_item.text())
-                pitch = float(pitch_item.text())
+                # Full float conversion (5 decimal places)
+                shaft_length = float(f"{float(length_item.text()):.5f}")
+                x_val = float(f"{float(x_item.text()):.5f}")
+                y_val = float(f"{float(y_item.text()):.5f}")
+                z_val = float(f"{float(z_item.text()):.5f}")
                 sensor_pos = sensor_widget.currentText()
 
                 segments.append({
                     "shaft_length": shaft_length,
-                    "euler": [x, y, pitch],
+                    "xyz": [x_val, y_val, z_val],
                     "sensor_position": sensor_pos
                 })
             except Exception:
                 QMessageBox.warning(self, "Invalid Data", f"Check row {i+1}: All cells must be filled with valid numbers and sensor selected.")
-                return
+                return None
 
-        data = {"vehicle": vehicle_id, "segments": segments}
+        return vehicle_id, segments
 
-        try:
-            save_path_data(f"{vehicle_id}.json", data)
-            QMessageBox.information(self, "Success", f"Path saved to:\ndata/input/{vehicle_id}.json")
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to save file: {str(e)}")
+    def save_path(self):
+        data = self.collect_table_data()
+        if data:
+            vehicle_id, segments = data
+            try:
+                save_path_data(f"{vehicle_id}.json", {"vehicle": vehicle_id, "segments": segments})
+                QMessageBox.information(self, "Success", f"Path saved to:\ndata/input/{vehicle_id}.json")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to save file: {str(e)}")
+
+    def preview_path(self):
+        data = self.collect_table_data()
+        if not data:
+            return
+        _, segments = data
+
+        # --- Extract lengths, X, Y, Z ---
+        shaft_lengths = [seg["shaft_length"] for seg in segments]
+        x_angles = [seg["xyz"][0] for seg in segments]
+        y_angles = [seg["xyz"][1] for seg in segments]
+        z_angles = [seg["xyz"][2] for seg in segments]  # included if needed in path_math
+
+        # --- Compute 3D points ---
+        points = compute_path(shaft_lengths, x_angles, y_angles)  # path_math expects yaw/pitch
+        points = np.array(points)
+
+        # --- Plot 3D path ---
+        fig = plt.figure(figsize=(8, 6))
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot(points[:, 0], points[:, 1], points[:, 2], '-o', linewidth=2, markersize=6)
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        ax.set_title('3D Steering Path Preview')
+        ax.grid(True)
+        ax.view_init(elev=20, azim=45)
+        plt.show()

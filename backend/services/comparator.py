@@ -1,46 +1,32 @@
 # backend/services/comparator.py
 import numpy as np
+from backend.services.path_math import compute_path  # central computation function
 
-def compute_path_points(segments):
-    """
-    Compute 3D points from shaft lengths and Euler angles (yaw, pitch).
-    """
-    points = [(0, 0, 0)]
-    x, y, z = 0, 0, 0
-
-    for seg in segments:
-        l = seg['shaft_length']
-        yaw_deg = seg['euler'][0]
-        pitch_deg = seg['euler'][1]
-
-        yaw_rad = np.radians(yaw_deg)
-        pitch_rad = np.radians(pitch_deg)
-
-        dx = l * np.cos(pitch_rad) * np.cos(yaw_rad)
-        dy = l * np.cos(pitch_rad) * np.sin(yaw_rad)
-        dz = l * np.sin(pitch_rad)
-
-        x += dx
-        y += dy
-        z += dz
-        points.append((x, y, z))
-
-    return points
 
 def compare_paths(segments1, segments2):
     """
     Compare two paths represented as segments.
     Returns dict with average and max deviation, plus 3D points for both paths.
     """
-    points1 = compute_path_points(segments1)
-    points2 = compute_path_points(segments2)
+    # Compute 3D points using the central compute_path function
+    shaft_lengths1 = [seg['shaft_length'] for seg in segments1]
+    yaw_angles1 = [seg['euler'][0] for seg in segments1]
+    pitch_angles1 = [seg['euler'][1] for seg in segments1]
 
+    shaft_lengths2 = [seg['shaft_length'] for seg in segments2]
+    yaw_angles2 = [seg['euler'][0] for seg in segments2]
+    pitch_angles2 = [seg['euler'][1] for seg in segments2]
+
+    points1 = compute_path(shaft_lengths1, yaw_angles1, pitch_angles1)
+    points2 = compute_path(shaft_lengths2, yaw_angles2, pitch_angles2)
+
+    # Align lengths
     length = min(len(points1), len(points2))
     points1 = points1[:length]
     points2 = points2[:length]
 
-    deltas = [np.linalg.norm(np.subtract(points1[i], points2[i])) for i in range(length)]
-
+    # Compute deviations
+    deltas = [float(np.linalg.norm(np.subtract(points1[i], points2[i]))) for i in range(length)]
     avg_deviation = float(np.mean(deltas)) if deltas else 0.0
     max_deviation = float(np.max(deltas)) if deltas else 0.0
 
@@ -51,11 +37,3 @@ def compare_paths(segments1, segments2):
         'max_deviation': max_deviation,
         'deltas': deltas
     }
-
-def extract_path_points(segments):
-    """
-    Converts a list of segment dictionaries into a list of 3D points (x, y, z).
-    """
-    return [(seg["x"], seg["y"], seg["z"]) for seg in segments]
-            
-         
